@@ -1,0 +1,6 @@
+*.o
+Makefile
+config.h
+config.status
+moo
+y.tab.h
