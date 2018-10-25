@@ -7,3 +7,4 @@ authors = ["Michael Walker <mike@barrucadu.co.uk>"]
 crate-type = ["dylib"]
 
 [dependencies]
+md5 = "0.5"

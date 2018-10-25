@@ -1,4 +1,14 @@
 [[package]]
 name = "lambdamoo-rs"
 version = "0.1.0"
+dependencies = [
+ "md5 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
+[[package]]
+name = "md5"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum md5 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c1ad8b18d0b6ae54e03c9fe1f7dea2ee5f8e0115a87611316794be1bc51537f7"

@@ -14,7 +14,7 @@
 #   Pavel@Xerox.Com
 
 
-RUSTSRCS = rust-source/Cargo.toml rust-source/src/lib.rs
+RUSTSRCS = rust-source/Cargo.toml rust-source/src/lib.rs rust-source/src/crypto.rs
 RUSTLIB=lambdamoo_rs
 RUSTSO = lib$(RUSTLIB).so
 
@@ -37,7 +37,7 @@ COMPILE.c = $(CC) $(CFLAGS) $(CPPFLAGS) -c
 CSRCS = ast.c code_gen.c db_file.c db_io.c db_objects.c db_properties.c \
 	db_verbs.c decompile.c disassemble.c eval_env.c eval_vm.c \
 	exceptions.c execute.c extensions.c functions.c keywords.c list.c \
-	log.c malloc.c match.c md5.c name_lookup.c network.c net_mplex.c \
+	log.c malloc.c match.c name_lookup.c network.c net_mplex.c \
 	net_proto.c numbers.c objects.c parse_cmd.c pattern.c program.c \
 	property.c quota.c ref_count.c regexpr.c server.c storage.c streams.c str_intern.c \
 	sym_table.c tasks.c timers.c unparse.c utils.c verbs.c version.c
@@ -54,7 +54,7 @@ YSRCS = parser.y
 
 HDRS =  ast.h bf_register.h code_gen.h db.h db_io.h db_private.h decompile.h \
 	disassemble.h eval_env.h eval_vm.h exceptions.h execute.h functions.h \
-	getpagesize.h keywords.h list.h log.h match.h md5.h name_lookup.h \
+	getpagesize.h keywords.h list.h log.h match.h name_lookup.h \
 	network.h net_mplex.h net_multi.h net_proto.h numbers.h opcode.h \
 	options.h parse_cmd.h parser.h pattern.h program.h quota.h random.h \
 	ref_count.h regexpr.h server.h storage.h streams.h structures.h  str_intern.h \
@@ -376,7 +376,7 @@ keywords.o: keywords.c my-ctype.h config.h my-string.h keywords.h \
 list.o: list.c my-ctype.h config.h my-string.h bf_register.h \
  exceptions.h functions.h my-stdio.h execute.h db.h program.h \
  structures.h version.h opcode.h options.h parse_cmd.h list.h log.h \
- md5.h pattern.h random.h ref_count.h streams.h storage.h unparse.h \
+ pattern.h random.h ref_count.h streams.h storage.h unparse.h \
  utils.h
 log.o: log.c my-stdarg.h config.h my-stdio.h my-string.h my-time.h \
  bf_register.h functions.h execute.h db.h program.h structures.h \
@@ -386,7 +386,6 @@ malloc.o: malloc.c options.h config.h
 match.o: match.c my-stdlib.h config.h my-string.h db.h program.h \
  structures.h my-stdio.h version.h exceptions.h match.h parse_cmd.h \
  storage.h ref_count.h unparse.h utils.h execute.h opcode.h options.h
-md5.o: md5.c my-string.h config.h md5.h
 name_lookup.o: name_lookup.c options.h config.h my-signal.h \
  my-stdlib.h my-unistd.h my-inet.h my-in.h my-types.h my-socket.h \
  my-wait.h my-string.h log.h my-stdio.h structures.h server.h \
