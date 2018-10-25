@@ -13,8 +13,13 @@
 #   Palo Alto, CA 94304
 #   Pavel@Xerox.Com
 
+
+RUSTSRCS = rust-source/Cargo.toml rust-source/src/lib.rs
+RUSTLIB=lambdamoo_rs
+RUSTSO = lib$(RUSTLIB).so
+
 CC = @CC@
-LIBRARIES = @LIBS@
+LIBRARIES = @LIBS@ -L . -l$(RUSTLIB)
 YACC = @YACC@
 
 CFLAGS = -O
@@ -65,7 +70,7 @@ CLIENT_SRCS = client_bsd.c client_sysv.c
 
 ALL_CSRCS = $(CSRCS) $(OPT_CSRCS) $(CLIENT_SRCS)
 
-SRCS = $(ALL_CSRCS) keywords.gperf $(YSRCS) $(HDRS) $(SYSHDRS)
+SRCS = $(ALL_CSRCS) keywords.gperf $(YSRCS) $(HDRS) $(SYSHDRS) $(RUSTSRCS)
 
 DISTFILES = $(SRCS) Makefile.in restart restart.sh \
 	Minimal.db README.Minimal \
@@ -78,7 +83,7 @@ YOBJS = $(YSRCS:.y=.o)
 
 OBJS = $(COBJS) $(YOBJS)
 
-moo:	$(OBJS)
+moo:	$(OBJS) $(RUSTSO)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBRARIES) -o $@
 
 pure_moo: moo
@@ -113,6 +118,10 @@ config.h: config.h.in config.status
 y.tab.h: parser.o
 	touch y.tab.h
 
+$(RUSTSO): $(RUSTSRCS)
+	cd rust-source && cargo build --release
+	cp rust-source/target/release/$(RUSTSO) .
+
 keywords.c: keywords.gperf
 	pgperf -aCIptT -k1,3,$$ keywords.gperf \
 		| sed -e 's/#include <ctype.h>/#include "my-ctype.h"/' \
@@ -137,7 +146,7 @@ tags:
 	etags -t $(SRCS)
 
 clean:
-	rm -f $(OBJS) core y.tab.c y.tab.h y.output makedep eddep 
+	rm -f $(OBJS) $(RUSTSO) core y.tab.c y.tab.h y.output makedep eddep 
 
 distclean:	clean
 	rm -f config.h Makefile config.status

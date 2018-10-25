@@ -1,4 +1,5 @@
 *.o
+*.so
 Makefile
 config.h
 config.status

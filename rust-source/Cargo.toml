@@ -1,0 +1,9 @@
+[package]
+name = "lambdamoo-rs"
+version = "0.1.0"
+authors = ["Michael Walker <mike@barrucadu.co.uk>"]
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]

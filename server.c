@@ -1166,6 +1166,8 @@ read_active_connections(void)
     return 1;
 }
 
+void rust_hello_world(const char*);
+
 int
 main(int argc, char **argv)
 {
@@ -1174,6 +1176,8 @@ main(int argc, char **argv)
     int emergency = 0;
     Var desc;
     slistener *l;
+
+    rust_hello_world("rust is working!");
 
     init_cmdline(argc, argv);
 
