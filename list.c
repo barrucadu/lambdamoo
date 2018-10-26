@@ -35,8 +35,7 @@
 #include "utils.h"
 
 /* in crypto.rs */
-typedef unsigned char uint8;
-void md5_bytes(const char *input, int length, uint8 result[16]);
+const char * hash_bytes(const char *input, int length);
 
 Var
 new_list(int size)
@@ -919,23 +918,6 @@ bf_value_bytes(Var arglist, Byte next, void *vdata, Objid progr)
     r.v.num = value_bytes(arglist.v.list[1]);
     free_var(arglist);
     return make_var_pack(r);
-}
-
-static const char *
-hash_bytes(const char *input, int length)
-{
-    uint8 result[16];
-    int i;
-    const char digits[] = "0123456789ABCDEF";
-    char *hex = str_dup("12345678901234567890123456789012");
-    const char *answer = hex;
-
-    md5_bytes(input, length, result);
-    for (i = 0; i < 16; i++) {
-	*hex++ = digits[result[i] >> 4];
-	*hex++ = digits[result[i] & 0xF];
-    }
-    return answer;
 }
 
 static package
