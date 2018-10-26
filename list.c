@@ -35,7 +35,7 @@
 #include "utils.h"
 
 /* in crypto.rs */
-const char * hash_bytes(const char *input, int length);
+const char * old_hash_bytes(const char *input, int length);
 
 Var
 new_list(int size)
@@ -931,7 +931,7 @@ bf_binary_hash(Var arglist, Byte next, void *vdata, Objid progr)
     if (!bytes)
 	return make_error_pack(E_INVARG);
     r.type = TYPE_STR;
-    r.v.str = hash_bytes(bytes, length);
+    r.v.str = old_hash_bytes(bytes, length);
     return make_var_pack(r);
 }
 
@@ -942,7 +942,7 @@ bf_string_hash(Var arglist, Byte next, void *vdata, Objid progr)
     const char *str = arglist.v.list[1].v.str;
 
     r.type = TYPE_STR;
-    r.v.str = hash_bytes(str, strlen(str));
+    r.v.str = old_hash_bytes(str, strlen(str));
     free_var(arglist);
     return make_var_pack(r);
 }
@@ -954,7 +954,7 @@ bf_value_hash(Var arglist, Byte next, void *vdata, Objid progr)
     const char *lit = value_to_literal(arglist.v.list[1]);
 
     r.type = TYPE_STR;
-    r.v.str = hash_bytes(lit, strlen(lit));
+    r.v.str = old_hash_bytes(lit, strlen(lit));
     free_var(arglist);
     return make_var_pack(r);
 }

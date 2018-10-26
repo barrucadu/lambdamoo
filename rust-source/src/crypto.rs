@@ -8,13 +8,11 @@ use memory;
 /// Hash a sequence of bytes using MD5.
 ///
 /// TODO: Use a better hashing algorithm.
-///
-/// TODO: Rename when `hash_bytes` is gone.
-pub fn rs_hash_bytes(bytes: &[u8]) -> &[u8] {
-    // for now, convert to a C string and pass to `hash_bytes`.
+pub fn hash_bytes(bytes: &[u8]) -> &[u8] {
+    // for now, convert to a C string and pass to `old_hash_bytes`.
     let source = bytes.as_ptr() as *const libc::c_char;
     let length = bytes.len() as libc::c_int;
-    let hashed = hash_bytes(source, length);
+    let hashed = old_hash_bytes(source, length);
     if hashed.is_null() {
         &[]
     } else {
@@ -28,7 +26,7 @@ pub fn rs_hash_bytes(bytes: &[u8]) -> &[u8] {
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn hash_bytes(
+pub extern "C" fn old_hash_bytes(
     source: *const libc::c_char,
     length: libc::c_int,
 ) -> *const libc::c_char {
@@ -76,7 +74,7 @@ mod test {
             ];
 
         for (index, (original, expected_hash)) in examples.iter().enumerate() {
-            let actual_hash = rs_hash_bytes(original);
+            let actual_hash = hash_bytes(original);
             assert_eq!(actual_hash, *expected_hash, "example: {}", index);
         }
     }
