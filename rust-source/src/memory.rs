@@ -1,5 +1,7 @@
 extern crate libc;
 
+use std::ffi;
+
 /// Allocate memory, with space for a int immediately before the
 /// returned pointer IFF the `memory_type` is float (12), string (5),
 /// or list (7).
@@ -60,11 +62,21 @@ pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: u32) {
     unsafe { libc::free(ptr.offset(-(offset as isize))) }
 }
 
+/// Convert a Rust `&str` into a C string with refcount part.
+///
+/// TODO: Remove.
+pub fn rs_str_to_c_str(src: &str) -> *mut libc::c_char {
+    let c_string = ffi::CString::new(src).unwrap();
+    str_dup(c_string.as_ptr())
+}
+
 /// Duplicate a string.
 ///
 /// TODO: Intern empty strings.
 ///
 /// TODO: Handle failed malloc in Rust when `panic` is ported.
+///
+/// TODO: Remove.
 #[no_mangle]
 pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
     let strlen = if src.is_null() {

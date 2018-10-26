@@ -100,13 +100,14 @@ dbpriv_build_prep_table(void)
 	     * re-entrant, and DB_FIND_PREP() is called from code that's still
 	     * using the results of a previous call to PARSE_INTO_WORDS()...
 	     */
-	    words = parse_into_words(cprep, &nwords);
+	    words = old_parse_into_words(cprep, &nwords);
 
 	    current_alias = mymalloc(sizeof(struct pt_entry), M_PREP);
 	    current_alias->nwords = nwords;
 	    current_alias->next = 0;
 	    for (j = 0; j < nwords; j++)
-		current_alias->words[j] = str_dup(words[j]);
+		current_alias->words[j] = words[j];
+            myfree(words, M_STRING_PTRS);
 	    *prev = current_alias;
 	    prev = &current_alias->next;
 	}
@@ -150,6 +151,7 @@ db_match_prep(const char *prepname)
 {
     db_prep_spec prep;
     int argc;
+    int i;
     char *ptr;
     char **argv;
     char *s, first;
@@ -169,9 +171,12 @@ db_match_prep(const char *prepname)
     if ((ptr = strchr(s, '/')) != '\0')
 	*ptr = '\0';
 
-    argv = parse_into_words(s, &argc);
+    argv = old_parse_into_words(s, &argc);
     prep = db_find_prep(argc, argv, 0, 0);
+    for (i = 0; i < argc; i++)
+      free_str(argv[i]);
     free_str(s);
+    myfree(argv, M_STRING_PTRS);
     return prep;
 }
 

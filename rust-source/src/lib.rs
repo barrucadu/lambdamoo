@@ -4,6 +4,9 @@ pub use crypto::*;
 pub mod memory;
 pub use memory::*;
 
+pub mod parse_cmd;
+pub use parse_cmd::*;
+
 use std::ffi::CStr;
 use std::os::raw::c_char;
 

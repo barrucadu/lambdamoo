@@ -30,54 +30,6 @@
 #include "structures.h"
 #include "utils.h"
 
-char **
-parse_into_words(char *input, int *nwords)
-{
-    static char **words = 0;
-    static int max_words = 0;
-    int in_quotes = 0;
-    char *ptr = input;
-
-    if (!words) {
-	max_words = 50;
-	words = mymalloc(max_words * sizeof(char *), M_STRING_PTRS);
-    }
-    while (*input == ' ')
-	input++;
-
-    for (*nwords = 0; *input != '\0'; (*nwords)++) {
-	if (*nwords == max_words) {
-	    int new_max = max_words * 2;
-	    char **new = mymalloc(new_max * sizeof(char *), M_STRING_PTRS);
-	    int i;
-
-	    for (i = 0; i < max_words; i++)
-		new[i] = words[i];
-
-	    myfree(words, M_STRING_PTRS);
-	    words = new;
-	    max_words = new_max;
-	}
-	words[*nwords] = ptr;
-	while (*input != '\0' && (in_quotes || *input != ' ')) {
-	    char c = *(input++);
-
-	    if (c == '"')
-		in_quotes = !in_quotes;
-	    else if (c == '\\') {
-		if (*input != '\0')
-		    *(ptr++) = *(input++);
-	    } else
-		*(ptr++) = c;
-	}
-	while (*input == ' ')
-	    input++;
-	*(ptr++) = '\0';
-    }
-
-    return words;
-}
-
 static char *
 build_string(int argc, char *argv[])
 {
@@ -102,9 +54,6 @@ build_string(int argc, char *argv[])
     return str;
 }
 
-#define MAXWORDS		500	/* maximum number of words in a line */
-					/* This limit should be removed...   */
-
 Var
 parse_into_wordlist(const char *command)
 {
@@ -113,13 +62,14 @@ parse_into_wordlist(const char *command)
     Var args;
     char *s = str_dup(command);
 
-    argv = parse_into_words(s, &argc);
+    argv = old_parse_into_words(s, &argc);
     args = new_list(argc);
     for (i = 1; i <= argc; i++) {
 	args.v.list[i].type = TYPE_STR;
-	args.v.list[i].v.str = str_dup(argv[i - 1]);
+	args.v.list[i].v.str = argv[i - 1];
     }
     free_str(s);
+    myfree(argv, M_STRING_PTRS);
     return args;
 }
 
@@ -176,7 +126,7 @@ parse_command(const char *command, Objid user)
 	    argstr++;
 	break;
     }
-    argv = parse_into_words(buf, &argc);
+    argv = old_parse_into_words(buf, &argc);
 
     if (argc == 0) {
 	free_str(buf);
@@ -188,7 +138,7 @@ parse_command(const char *command, Objid user)
     pc.args = new_list(argc - 1);
     for (i = 1; i < argc; i++) {
 	pc.args.v.list[i].type = TYPE_STR;
-	pc.args.v.list[i].v.str = str_dup(argv[i]);
+	pc.args.v.list[i].v.str = argv[i];
     }
 
     /*
@@ -233,6 +183,7 @@ parse_command(const char *command, Objid user)
     }
 
     free_str(buf);
+    myfree(argv, M_STRING_PTRS);
 
     return &pc;
 }
