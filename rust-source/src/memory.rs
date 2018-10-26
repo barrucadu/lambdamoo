@@ -60,10 +60,33 @@ pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: u32) {
     unsafe { libc::free(ptr.offset(-(offset as isize))) }
 }
 
+/// Duplicate a string.
+///
+/// TODO: Intern empty strings.
+///
+/// TODO: Handle failed malloc in Rust when `panic` is ported.
+#[no_mangle]
+pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
+    let strlen = if src.is_null() {
+        0
+    } else {
+        unsafe { libc::strlen(src) }
+    };
+
+    let dst = almost_mymalloc(strlen + 1, 5) as *mut libc::c_char;
+
+    if !dst.is_null() {
+        unsafe { libc::strcpy(dst, src) };
+    }
+
+    dst
+}
+
 /// Calculate space for the ref counting cell.
 ///
-/// Only floats, strings, and lists get space for a refcount.  Element
-/// alignment is preserved, even though the refcount is a `u32`.
+/// Only floats (12), strings (5), and lists (7) get space for a
+/// refcount.  Element alignment is preserved, even though the
+/// refcount is a `u32`.
 fn refcount_offset(memory_type: u32) -> usize {
     match memory_type {
         5 => 4, // sizeof(int)
