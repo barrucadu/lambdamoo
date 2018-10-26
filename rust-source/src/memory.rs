@@ -72,10 +72,6 @@ pub fn rs_str_to_c_str(src: &str) -> *mut libc::c_char {
 
 /// Duplicate a string.
 ///
-/// TODO: Intern empty strings.
-///
-/// TODO: Handle failed malloc in Rust when `panic` is ported.
-///
 /// TODO: Remove.
 #[no_mangle]
 pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
@@ -85,10 +81,25 @@ pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
         unsafe { libc::strlen(src) }
     };
 
+    str_dup_n(src, strlen)
+}
+
+/// Duplicate a string of a given length.  Add a null terminator on
+/// the end.
+///
+/// TODO: Intern empty strings.
+///
+/// TODO: Handle failed malloc in Rust when `panic` is ported.
+///
+/// TODO: Remove.
+pub fn str_dup_n(src: *const libc::c_char, strlen: libc::size_t) -> *mut libc::c_char {
     let dst = almost_mymalloc(strlen + 1, 5) as *mut libc::c_char;
 
     if !dst.is_null() {
-        unsafe { libc::strcpy(dst, src) };
+        unsafe {
+            libc::strncpy(dst, src, strlen);
+            *(dst.offset(strlen as isize)) = 0;
+        };
     }
 
     dst

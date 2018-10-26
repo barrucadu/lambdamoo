@@ -8,18 +8,17 @@ use memory;
 /// Hash a sequence of bytes using MD5.
 ///
 /// TODO: Use a better hashing algorithm.
-pub fn hash_bytes(bytes: &[u8]) -> &[u8] {
-    // for now, convert to a C string and pass to `old_hash_bytes`.
-    let source = bytes.as_ptr() as *const libc::c_char;
-    let length = bytes.len() as libc::c_int;
-    let hashed = old_hash_bytes(source, length);
-    if hashed.is_null() {
-        &[]
-    } else {
-        let hashed_bytes = unsafe { slice::from_raw_parts(hashed as *const u8, 32) };
-        memory::myfree(hashed as *mut libc::c_void, 5);
-        hashed_bytes
+pub fn hash_bytes(bytes: &[u8]) -> [u8; 32] {
+    let md5::Digest(digest) = md5::compute(bytes);
+
+    let digits: [u8; 16] = *b"0123456789ABCDEF";
+    let mut answer: [u8; 32] = *b"12345678901234567890123456789012";
+    for i in 0..16 {
+        answer[i * 2] = digits[(digest[i] >> 4) as usize];
+        answer[i * 2 + 1] = digits[(digest[i] & 0xF) as usize];
     }
+
+    answer
 }
 
 /// Hash a sequence of bytes using MD5.
@@ -30,18 +29,15 @@ pub extern "C" fn old_hash_bytes(
     source: *const libc::c_char,
     length: libc::c_int,
 ) -> *const libc::c_char {
-    let bytes = unsafe { slice::from_raw_parts(source as *const u8, length as usize) };
-    let md5::Digest(digest) = md5::compute(bytes);
+    // convert into Rust types and call `hash_bytes`.
+    unsafe {
+        let bytes = slice::from_raw_parts(source as *const u8, length as usize);
 
-    let digits: [u8; 16] = *b"0123456789ABCDEF";
-    let mut answer: [u8; 33] = *b"12345678901234567890123456789012\0";
-    for i in 0..16 {
-        answer[i * 2] = digits[(digest[i] >> 4) as usize];
-        answer[i * 2 + 1] = digits[(digest[i] & 0xF) as usize];
+        let answer = hash_bytes(bytes);
+
+        // return the answer as a reference-counted string
+        memory::str_dup_n(answer.as_ptr() as *const libc::c_char, answer.len())
     }
-
-    // return the answer as a reference-counted string
-    memory::str_dup(answer.as_ptr() as *const libc::c_char)
 }
 
 #[cfg(test)]
