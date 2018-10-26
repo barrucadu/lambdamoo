@@ -2,8 +2,14 @@
 name = "lambdamoo-rs"
 version = "0.1.0"
 dependencies = [
+ "libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "md5 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "libc"
+version = "0.2.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "md5"
@@ -11,4 +17,5 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
+"checksum libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)" = "76e3a3ef172f1a0b9a9ff0dd1491ae5e6c948b94479a3021819ba7d860c8645d"
 "checksum md5 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c1ad8b18d0b6ae54e03c9fe1f7dea2ee5f8e0115a87611316794be1bc51537f7"

@@ -26,51 +26,20 @@
 #include "structures.h"
 #include "utils.h"
 
-static unsigned alloc_num[Sizeof_Memory_Type];
-
-static inline int
-refcount_overhead(Memory_Type type)
-{
-    /* These are the only allocation types that are addref()'d.
-     * As long as we're living on the wild side, avoid getting the
-     * refcount slot for allocations that won't need it.
-     */
-    switch (type) {
-    case M_FLOAT:
-	/* for systems with picky double alignment */
-	return MAX(sizeof(int), sizeof(double));
-    case M_STRING:
-	return sizeof(int);
-    case M_LIST:
-	/* for systems with picky pointer alignment */
-	return MAX(sizeof(int), sizeof(Var *));
-    default:
-	return 0;
-    }
-}
+extern void* almost_mymalloc(size_t size, Memory_Type type);
 
 void *
-mymalloc(unsigned size, Memory_Type type)
+mymalloc(size_t size, Memory_Type type)
 {
-    char *memptr;
     char msg[100];
-    int offs;
 
-    if (size == 0)		/* For queasy systems */
-	size = 1;
+    char* memptr = (char*)almost_mymalloc(size, type);
 
-    offs = refcount_overhead(type);
-    memptr = (char *) malloc(size + offs);
     if (!memptr) {
-	sprintf(msg, "memory allocation (size %u) failed!", size);
+	sprintf(msg, "memory allocation (size %zu) failed!", size);
 	panic(msg);
     }
-    alloc_num[type]++;
 
-    if (offs) {
-	memptr += offs;
-	((int *) memptr)[-1] = 1;
-    }
     return memptr;
 }
 
@@ -102,27 +71,20 @@ str_dup(const char *s)
     return r;
 }
 
+extern void* almost_myrealloc(void* ptr, size_t size, Memory_Type type);
+
 void *
-myrealloc(void *ptr, unsigned size, Memory_Type type)
+myrealloc(void *ptr, size_t size, Memory_Type type)
 {
-    int offs = refcount_overhead(type);
     static char msg[100];
 
-    ptr = realloc((char *) ptr - offs, size + offs);
+    ptr = almost_myrealloc(ptr, size, type);
     if (!ptr) {
-	sprintf(msg, "memory re-allocation (size %u) failed!", size);
+	sprintf(msg, "memory re-allocation (size %zu) failed!", size);
 	panic(msg);
     }
 
-    return (char *)ptr + offs;
-}
-
-void
-myfree(void *ptr, Memory_Type type)
-{
-    alloc_num[type]--;
-
-    free((char *) ptr - refcount_overhead(type));
+    return ptr;
 }
 
 /* XXX stupid fix for non-gcc compilers, already in storage.h */
