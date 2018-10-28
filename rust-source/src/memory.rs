@@ -2,16 +2,69 @@ extern crate libc;
 
 use std::ffi;
 
+/// Types of memory.  Members use the original C names.
+///
+/// TODO: Remove.
+#[allow(non_camel_case_types)]
+#[repr(C)]
+pub enum MemoryType {
+    M_AST_POOL,
+    M_AST,
+    M_PROGRAM,
+    M_PVAL,
+    M_NETWORK,
+    M_STRING,
+    M_VERBDEF,
+    M_LIST,
+    M_PREP,
+    M_PROPDEF,
+    M_OBJECT_TABLE,
+    M_OBJECT,
+    M_FLOAT,
+    M_STREAM,
+    M_NAMES,
+    M_ENV,
+    M_TASK,
+    M_PATTERN,
+
+    M_BYTECODES,
+    M_FORK_VECTORS,
+    M_LIT_LIST,
+    M_PROTOTYPE,
+    M_CODE_GEN,
+    M_DISASSEMBLE,
+    M_DECOMPILE,
+
+    M_RT_STACK,
+    M_RT_ENV,
+    M_BI_FUNC_DATA,
+    M_VM,
+
+    M_REF_ENTRY,
+    M_REF_TABLE,
+    M_VC_ENTRY,
+    M_VC_TABLE,
+    M_STRING_PTRS,
+    M_INTERN_POINTER,
+    M_INTERN_ENTRY,
+    M_INTERN_HUNK,
+
+    Sizeof_Memory_Type,
+}
+
 /// Allocate memory, with space for a int immediately before the
-/// returned pointer IFF the `memory_type` is float (12), string (5),
-/// or list (7).
+/// returned pointer IFF the `memory_type` is `M_FLOAT`, `M_STRING`,
+/// or `M_LIST`.
 ///
 /// TODO: Phase this out in favour of `Rc<RefCell<_>>` as things are
 /// ported to Rust.
 ///
 /// TODO: Handle failed malloc in Rust when `panic` is ported.
 #[no_mangle]
-pub extern "C" fn almost_mymalloc(size: libc::size_t, memory_type: u32) -> *mut libc::c_void {
+pub extern "C" fn almost_mymalloc(
+    size: libc::size_t,
+    memory_type: MemoryType,
+) -> *mut libc::c_void {
     let offset = refcount_offset(memory_type);
     let actual_size = if size == 0 { 1 } else { size } + offset;
 
@@ -40,7 +93,7 @@ pub extern "C" fn almost_mymalloc(size: libc::size_t, memory_type: u32) -> *mut 
 pub extern "C" fn almost_myrealloc(
     ptr: *mut libc::c_void,
     size: libc::size_t,
-    memory_type: u32,
+    memory_type: MemoryType,
 ) -> *mut libc::c_void {
     let offset = refcount_offset(memory_type);
     let actual_size = size + offset;
@@ -57,7 +110,7 @@ pub extern "C" fn almost_myrealloc(
 
 /// Free memory allocated by `almost_mymalloc`.
 #[no_mangle]
-pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: u32) {
+pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: MemoryType) {
     let offset = refcount_offset(memory_type);
     unsafe { libc::free(ptr.offset(-(offset as isize))) }
 }
@@ -93,7 +146,7 @@ pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
 ///
 /// TODO: Remove.
 pub fn str_dup_n(src: *const libc::c_char, strlen: libc::size_t) -> *mut libc::c_char {
-    let dst = almost_mymalloc(strlen + 1, 5) as *mut libc::c_char;
+    let dst = almost_mymalloc(strlen + 1, MemoryType::M_STRING) as *mut libc::c_char;
 
     if !dst.is_null() {
         unsafe {
@@ -107,14 +160,13 @@ pub fn str_dup_n(src: *const libc::c_char, strlen: libc::size_t) -> *mut libc::c
 
 /// Calculate space for the ref counting cell.
 ///
-/// Only floats (12), strings (5), and lists (7) get space for a
-/// refcount.  Element alignment is preserved, even though the
-/// refcount is a `u32`.
-fn refcount_offset(memory_type: u32) -> usize {
+/// Only floats, strings, and lists get space for a refcount.  Element
+/// alignment is preserved, even though the refcount is a `u32`.
+fn refcount_offset(memory_type: MemoryType) -> usize {
     match memory_type {
-        5 => 4, // sizeof(int)
-        7 => 8, // sizeof(Var*)
-        12 => 8, // sizeof(double)
+        MemoryType::M_STRING => 4, // sizeof(int)
+        MemoryType::M_LIST => 8, // sizeof(Var*)
+        MemoryType::M_FLOAT => 8, // sizeof(double)
         _ => 0,
     }
 }

@@ -76,7 +76,7 @@ pub extern "C" fn old_parse_into_words(
             words.iter().map(|s| rs_str_to_c_str(s.as_str())).collect();
         *nwords = words.len() as libc::c_int;
         let actual_size = size_of::<*mut libc::c_char>() * words.len();
-        let out = almost_mymalloc(actual_size, 34);
+        let out = almost_mymalloc(actual_size, MemoryType::M_STRING_PTRS);
         if !out.is_null() {
             libc::memcpy(
                 out as *mut libc::c_void,
