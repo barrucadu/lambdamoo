@@ -60,7 +60,7 @@ property_defined_at_or_below(const char *pname, int phash, Objid oid)
 
     for (i = 0; i < length; i++)
 	if (props->l[i].hash == phash
-	    && !mystrcasecmp(props->l[i].name, pname))
+	    && !old_mystrcasecmp(props->l[i].name, pname))
 	    return 1;
 
     for (c = dbpriv_find_object(oid)->child;
@@ -169,8 +169,8 @@ db_rename_propdef(Objid oid, const char *old, const char *new)
 	Propdef p;
 
 	p = props->l[i];
-	if (p.hash == hash && !mystrcasecmp(p.name, old)) {
-	    if (mystrcasecmp(old, new) != 0) {	/* Not changing just the case */
+	if (p.hash == hash && !old_mystrcasecmp(p.name, old)) {
+	    if (old_mystrcasecmp(old, new) != 0) {	/* Not changing just the case */
 		h = db_find_property(oid, new, 0);
 		if (h.ptr
 		|| property_defined_at_or_below(new, str_hash(new), oid))
@@ -241,7 +241,7 @@ db_delete_propdef(Objid oid, const char *pname)
 	Propdef p;
 
 	p = props->l[i];
-	if (p.hash == hash && !mystrcasecmp(p.name, pname)) {
+	if (p.hash == hash && !old_mystrcasecmp(p.name, pname)) {
 	    if (p.name)
 		free_str(p.name);
 
@@ -412,7 +412,7 @@ db_find_property(Objid oid, const char *name, Var * value)
 	ptable_init = 1;
     }
     for (i = 0; i < Arraysize(ptable); i++) {
-	if (ptable[i].hash == hash && !mystrcasecmp(name, ptable[i].name)) {
+	if (ptable[i].hash == hash && !old_mystrcasecmp(name, ptable[i].name)) {
 	    static Objid ret;
 
 	    ret = oid;
@@ -434,7 +434,7 @@ db_find_property(Objid oid, const char *name, Var * value)
 
 	for (i = 0; i < length; i++, n++) {
 	    if (defs[i].hash == hash
-		&& !mystrcasecmp(defs[i].name, name)) {
+		&& !old_mystrcasecmp(defs[i].name, name)) {
 		Pval *prop;
 
 		h.definer = o->id;

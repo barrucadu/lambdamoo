@@ -14,7 +14,8 @@
 #   Pavel@Xerox.Com
 
 
-RUSTSRCS = rust-source/Cargo.toml rust-source/src/lib.rs rust-source/src/crypto.rs \
+RUSTSRCS = rust-source/Cargo.toml rust-source/src/lib.rs \
+           rust-source/src/ascii_string.rs rust-source/src/crypto.rs \
            rust-source/src/memory.rs rust-source/src/parse_cmd.rs
 RUSTLIB=lambdamoo_rs
 RUSTSO = lib$(RUSTLIB).so

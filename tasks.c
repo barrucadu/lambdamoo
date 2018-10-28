@@ -634,7 +634,7 @@ tasks_set_connection_option(task_queue q, const char *option, Var value)
 {
     tqueue *tq = q.ptr;
 
-    if (!mystrcasecmp(option, "flush-command")) {
+    if (!old_mystrcasecmp(option, "flush-command")) {
 	if (tq->flush_cmd)
 	    free_str(tq->flush_cmd);
 	if (value.type == TYPE_STR && value.v.str[0] != '\0')
@@ -644,7 +644,7 @@ tasks_set_connection_option(task_queue q, const char *option, Var value)
 
 	return 1;
     }
-    if (!mystrcasecmp(option, "hold-input")) {
+    if (!old_mystrcasecmp(option, "hold-input")) {
 	tq->hold_input = is_true(value);
 	if (!tq->hold_input && tq->first_input)		/* Anything to be done? */
 	    ensure_usage(tq);
@@ -658,12 +658,12 @@ tasks_connection_option(task_queue q, const char *option, Var * value)
 {
     tqueue *tq = q.ptr;
 
-    if (!mystrcasecmp(option, "flush-command")) {
+    if (!old_mystrcasecmp(option, "flush-command")) {
 	value->type = TYPE_STR;
 	value->v.str = (tq->flush_cmd ? str_ref(tq->flush_cmd) : str_dup(""));
 	return 1;
     }
-    if (!mystrcasecmp(option, "hold-input")) {
+    if (!old_mystrcasecmp(option, "hold-input")) {
 	value->type = TYPE_INT;
 	value->v.num = tq->hold_input;
 	return 1;
@@ -752,7 +752,7 @@ new_input_task(task_queue q, const char *input)
 {
     tqueue *tq = q.ptr;
 
-    if (tq->flush_cmd && mystrcasecmp(input, tq->flush_cmd) == 0) {
+    if (tq->flush_cmd && old_mystrcasecmp(input, tq->flush_cmd) == 0) {
 	flush_input(tq, 1);
 	return;
     }

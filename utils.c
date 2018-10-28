@@ -57,37 +57,6 @@ static const char cmap[] =
 "\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377";
 
 int
-mystrcasecmp(const char *ss, const char *tt)
-{
-    const unsigned char *s = (const unsigned char *) ss;
-    const unsigned char *t = (const unsigned char *) tt;
-
-    if (ss == tt) {
-	return 0;
-    }
-    while (cmap[*s] == cmap[*t++]) {
-	if (!*s++)
-	    return 0;
-    }
-    return (cmap[*s] - cmap[*--t]);
-}
-
-int
-mystrncasecmp(const char *ss, const char *tt, int n)
-{
-    const unsigned char *s = (const unsigned char *) ss;
-    const unsigned char *t = (const unsigned char *) tt;
-
-    if (!n || ss == tt)
-	return 0;
-    while (cmap[*s] == cmap[*t++]) {
-	if (!*s++ || !--n)
-	    return 0;
-    }
-    return (cmap[*s] - cmap[*--t]);
-}
-
-int
 verbcasecmp(const char *verb, const char *word)
 {
     const unsigned char *w;
@@ -252,7 +221,7 @@ equality(Var lhs, Var rhs, int case_matters)
 	    if (case_matters)
 		return !strcmp(lhs.v.str, rhs.v.str);
 	    else
-		return !mystrcasecmp(lhs.v.str, rhs.v.str);
+		return !old_mystrcasecmp(lhs.v.str, rhs.v.str);
 	case TYPE_LIST:
 	    if (lhs.v.list[0].v.num != rhs.v.list[0].v.num)
 		return 0;
@@ -286,7 +255,7 @@ strsub(const char *source, const char *what, const char *with, int case_counts)
 
     while (*source) {
 	if (!(case_counts ? strncmp(source, what, lwhat)
-	      : mystrncasecmp(source, what, lwhat))) {
+	      : old_mystrncasecmp(source, what, lwhat))) {
 	    stream_add_string(str, with);
 	    source += lwhat;
 	} else
@@ -304,7 +273,7 @@ strindex(const char *source, const char *what, int case_counts)
 
     for (s = source, e = source + strlen(source) - lwhat; s <= e; s++) {
 	if (!(case_counts ? strncmp(s, what, lwhat)
-	      : mystrncasecmp(s, what, lwhat))) {
+	      : old_mystrncasecmp(s, what, lwhat))) {
 	    return s - source + 1;
 	}
     }
@@ -319,7 +288,7 @@ strrindex(const char *source, const char *what, int case_counts)
 
     for (s = source + strlen(source) - lwhat; s >= source; s--) {
 	if (!(case_counts ? strncmp(s, what, lwhat)
-	      : mystrncasecmp(s, what, lwhat))) {
+	      : old_mystrncasecmp(s, what, lwhat))) {
 	    return s - source + 1;
 	}
     }

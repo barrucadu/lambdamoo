@@ -642,7 +642,7 @@ network_connection_option(network_handle nh, const char *option, Var * value)
 #if NETWORK_PROTOCOL == NP_TCP
     nhandle *h = nh.ptr;
 
-    if (!mystrcasecmp(option, "client-echo")) {
+    if (!old_mystrcasecmp(option, "client-echo")) {
 	value->type = TYPE_INT;
 	value->v.num = h->client_echo;
 	return 1;
@@ -668,7 +668,7 @@ network_set_connection_option(network_handle nh, const char *option, Var value)
 	static char telnet_cmd[4] =
 	{TN_IAC, 0, TN_ECHO, 0};
 
-	if (!mystrcasecmp(option, "client-echo")) {
+	if (!old_mystrcasecmp(option, "client-echo")) {
 	    h->client_echo = is_true(value);
 	    if (h->client_echo)
 		telnet_cmd[1] = TN_WONT;

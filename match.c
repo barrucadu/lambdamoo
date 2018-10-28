@@ -64,7 +64,7 @@ match_proc(void *data, Objid oid)
 	else
 	    name = names[i].v.str;
 
-	if (!mystrncasecmp(name, d->name, d->lname)) {
+	if (!old_mystrncasecmp(name, d->name, d->lname)) {
 	    if (name[d->lname] == '\0') {	/* exact match */
 		if (d->exact == NOTHING || d->exact == oid)
 		    d->exact = oid;
@@ -128,9 +128,9 @@ match_object(Objid player, const char *name)
     }
     if (!valid(player))
 	return FAILED_MATCH;
-    if (!mystrcasecmp(name, "me"))
+    if (!old_mystrcasecmp(name, "me"))
 	return player;
-    if (!mystrcasecmp(name, "here"))
+    if (!old_mystrcasecmp(name, "here"))
 	return db_object_location(player);
     return match_contents(player, name);
 }

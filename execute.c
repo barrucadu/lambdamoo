@@ -1056,7 +1056,7 @@ do {    						    	\
 			comparison = ((int) lhs.v.err) - ((int) rhs.v.err);
 			break;
 		    case TYPE_STR:
-			comparison = mystrcasecmp(lhs.v.str, rhs.v.str);
+			comparison = old_mystrcasecmp(lhs.v.str, rhs.v.str);
 			break;
 		    default:
 			errlog("RUN: Impossible type in comparison: %d\n",
@@ -2716,7 +2716,7 @@ reorder_rt_env(Var * old_rt_env, const char **old_names,
 	int slot;
 
 	for (slot = 0; slot < old_size; slot++) {
-	    if (mystrcasecmp(old_names[slot], prog->var_names[i]) == 0)
+	    if (old_mystrcasecmp(old_names[slot], prog->var_names[i]) == 0)
 		break;
 	}
 

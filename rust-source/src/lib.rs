@@ -1,3 +1,6 @@
+pub mod ascii_string;
+pub use ascii_string::*;
+
 pub mod crypto;
 pub use crypto::*;
 

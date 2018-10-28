@@ -125,13 +125,13 @@ validate_verb_info(Var v, Objid * owner, unsigned *flags, const char **names)
 static int
 match_arg_spec(const char *s, db_arg_spec * spec)
 {
-    if (!mystrcasecmp(s, "none")) {
+    if (!old_mystrcasecmp(s, "none")) {
 	*spec = ASPEC_NONE;
 	return 1;
-    } else if (!mystrcasecmp(s, "any")) {
+    } else if (!old_mystrcasecmp(s, "any")) {
 	*spec = ASPEC_ANY;
 	return 1;
-    } else if (!mystrcasecmp(s, "this")) {
+    } else if (!old_mystrcasecmp(s, "this")) {
 	*spec = ASPEC_THIS;
 	return 1;
     } else
@@ -141,10 +141,10 @@ match_arg_spec(const char *s, db_arg_spec * spec)
 static int
 match_prep_spec(const char *s, db_prep_spec * spec)
 {
-    if (!mystrcasecmp(s, "none")) {
+    if (!old_mystrcasecmp(s, "none")) {
 	*spec = PREP_NONE;
 	return 1;
-    } else if (!mystrcasecmp(s, "any")) {
+    } else if (!old_mystrcasecmp(s, "any")) {
 	*spec = PREP_ANY;
 	return 1;
     } else

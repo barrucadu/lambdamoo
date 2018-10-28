@@ -9,6 +9,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* ascii_string.rs */
+extern int old_mystrcasecmp(const char *, const char *);
+extern int old_mystrncasecmp(const char *, const char *, int);
+
 /* crypto.rs */
 const char * old_hash_bytes(const char *input, int length);
 

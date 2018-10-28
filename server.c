@@ -562,7 +562,7 @@ init_cmdline(int argc, char *argv[])
 static int
 server_set_connection_option(shandle * h, const char *option, Var value)
 {
-    if (!mystrcasecmp(option, "binary")) {
+    if (!old_mystrcasecmp(option, "binary")) {
 	h->binary = is_true(value);
 	network_set_connection_binary(h->nhandle, h->binary);
 	return 1;
@@ -573,7 +573,7 @@ server_set_connection_option(shandle * h, const char *option, Var value)
 static int
 server_connection_option(shandle * h, const char *option, Var * value)
 {
-    if (!mystrcasecmp(option, "binary")) {
+    if (!old_mystrcasecmp(option, "binary")) {
 	value->type = TYPE_INT;
 	value->v.num = h->binary;
 	return 1;
@@ -755,8 +755,8 @@ emergency_mode()
 		continue;
 	    command = words.v.list[1].v.str;
 
-	    if ((!mystrcasecmp(command, "program")
-		 || !mystrcasecmp(command, ".program"))
+	    if ((!old_mystrcasecmp(command, "program")
+		 || !old_mystrcasecmp(command, ".program"))
 		&& nargs == 1) {
 		const char *verbref = words.v.list[2].v.str;
 		db_verb_handle h;
@@ -795,7 +795,7 @@ emergency_mode()
 		    free_var(code);
 		    free_var(errors);
 		}
-	    } else if (!mystrcasecmp(command, "list") && nargs == 1) {
+	    } else if (!old_mystrcasecmp(command, "list") && nargs == 1) {
 		const char *verbref = words.v.list[2].v.str;
 		db_verb_handle h;
 		const char *message, *vname;
@@ -807,7 +807,7 @@ emergency_mode()
 				    MAIN_VECTOR);
 		else
 		    printf("%s\n", message);
-	    } else if (!mystrcasecmp(command, "disassemble") && nargs == 1) {
+	    } else if (!old_mystrcasecmp(command, "disassemble") && nargs == 1) {
 		const char *verbref = words.v.list[2].v.str;
 		db_verb_handle h;
 		const char *message, *vname;
@@ -818,20 +818,20 @@ emergency_mode()
 		    disassemble_to_file(stdout, db_verb_program(h));
 		else
 		    printf("%s\n", message);
-	    } else if (!mystrcasecmp(command, "abort") && nargs == 0) {
+	    } else if (!old_mystrcasecmp(command, "abort") && nargs == 0) {
 		exit(1);
-	    } else if (!mystrcasecmp(command, "quit") && nargs == 0) {
+	    } else if (!old_mystrcasecmp(command, "quit") && nargs == 0) {
 		start_ok = 0;
-	    } else if (!mystrcasecmp(command, "continue") && nargs == 0) {
+	    } else if (!old_mystrcasecmp(command, "continue") && nargs == 0) {
 		start_ok = 1;
-	    } else if (!mystrcasecmp(command, "debug") && nargs == 0) {
+	    } else if (!old_mystrcasecmp(command, "debug") && nargs == 0) {
 		debug = !debug;
-	    } else if (!mystrcasecmp(command, "wizard") && nargs == 1
+	    } else if (!old_mystrcasecmp(command, "wizard") && nargs == 1
 		 && sscanf(words.v.list[2].v.str, "#%d", &wizard) == 1) {
 		printf("** Switching to wizard #%d...\n", wizard);
 	    } else {
-		if (mystrcasecmp(command, "help")
-		    && mystrcasecmp(command, "?"))
+		if (old_mystrcasecmp(command, "help")
+		    && old_mystrcasecmp(command, "?"))
 		    printf("** Unknown or malformed command.\n");
 
 		printf(";EXPR                 "
