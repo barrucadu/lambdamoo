@@ -21,6 +21,7 @@
 #include "config.h"
 #include "structures.h"
 #include "ref_count.h"
+#include "rust.h"
 
 typedef enum Memory_Type {
     M_AST_POOL, M_AST, M_PROGRAM, M_PVAL, M_NETWORK, M_STRING, M_VERBDEF,
@@ -39,14 +40,11 @@ typedef enum Memory_Type {
 
 } Memory_Type;
 
-extern char *str_dup(const char *);
 extern const char *str_ref(const char *);
 extern Var memory_usage(void);
 
-extern void myfree(void *where, Memory_Type type);
 extern void *mymalloc(size_t size, Memory_Type type);
 extern void *myrealloc(void *where, size_t size, Memory_Type type);
-
 static inline void    /* XXX was extern, fix for non-gcc compilers */
 free_str(const char *s)
 {

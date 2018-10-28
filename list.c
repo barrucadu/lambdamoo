@@ -34,9 +34,6 @@
 #include "unparse.h"
 #include "utils.h"
 
-/* in crypto.rs */
-const char * old_hash_bytes(const char *input, int length);
-
 Var
 new_list(int size)
 {

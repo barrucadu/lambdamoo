@@ -16,6 +16,7 @@
  *****************************************************************************/
 
 #include "structures.h"
+#include "rust.h"
 
 extern Var listappend(Var list, Var value);
 extern Var listinsert(Var list, Var value, int pos);
