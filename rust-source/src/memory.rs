@@ -115,6 +115,45 @@ pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: MemoryType) {
     unsafe { libc::free(ptr.offset(-(offset as isize))) }
 }
 
+/// Increment the reference count of something.
+///
+/// CAUTION: This will access memory out of bounds if it's not a
+/// reference-countable type.  This does not check for overflow.
+///
+/// TODO: Remove
+#[no_mangle]
+pub extern "C" fn addref(ptr: *mut libc::c_void) -> i32 {
+    unsafe {
+        *((ptr as *mut i32).offset(-1)) += 1;
+        refcount(ptr)
+    }
+}
+
+/// Decrement the reference count of something.
+///
+/// CAUTION: This will access memory out of bounds if it's not a
+/// reference-countable type.  This does not check for underflow.
+///
+/// TODO: Remove
+#[no_mangle]
+pub extern "C" fn delref(ptr: *mut libc::c_void) -> i32 {
+    unsafe {
+        *((ptr as *mut i32).offset(-1)) -= 1;
+        refcount(ptr)
+    }
+}
+
+/// Get the reference count of something.
+///
+/// CAUTION: This will access memory out of bounds if it's not a
+/// reference-countable type.
+///
+/// TODO: Remove
+#[no_mangle]
+pub extern "C" fn refcount(ptr: *mut libc::c_void) -> i32 {
+    unsafe { (ptr as *mut i32).offset(-1).read() }
+}
+
 /// Convert a Rust `&str` into a C string with refcount part.
 ///
 /// TODO: Remove.

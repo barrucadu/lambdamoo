@@ -34,6 +34,9 @@ extern char *str_dup(const char *);
 extern void myfree(void *where, Memory_Type type);
 extern void *almost_mymalloc(size_t size, Memory_Type type);
 extern void *almost_myrealloc(void *where, size_t size, Memory_Type type);
+extern int32_t addref(void *ptr);
+extern int32_t delref(void *ptr);
+extern int32_t refcount(void *ptr);
 
 /* parse_cmd.rs */
 extern char **old_parse_into_words(char *input, int *nwords);

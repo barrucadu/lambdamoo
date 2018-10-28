@@ -27,7 +27,6 @@
 #include "options.h"
 #include "pattern.h"
 #include "random.h"
-#include "ref_count.h"
 #include "streams.h"
 #include "storage.h"
 #include "structures.h"

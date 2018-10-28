@@ -20,7 +20,6 @@
 
 #include "config.h"
 #include "structures.h"
-#include "ref_count.h"
 #include "rust.h"
 
 extern const char *str_ref(const char *);

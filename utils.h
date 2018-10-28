@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "execute.h"
+#include "rust.h"
 
 #undef MAX
 #undef MIN
