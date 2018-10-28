@@ -12,6 +12,8 @@
 /* ascii_string.rs */
 extern int old_mystrcasecmp(const char *, const char *);
 extern int old_mystrncasecmp(const char *, const char *, int);
+extern int old_strindex(const char *source, const char *what, int case_counts);
+extern int old_strrindex(const char *source, const char *what, int case_counts);
 
 /* crypto.rs */
 const char * old_hash_bytes(const char *input, int length);

@@ -607,7 +607,7 @@ bf_index(Var arglist, Byte next, void *vdata, Objid progr)
     if (arglist.v.list[0].v.num == 3)
 	case_matters = is_true(arglist.v.list[3]);
     r.type = TYPE_INT;
-    r.v.num = strindex(arglist.v.list[1].v.str, arglist.v.list[2].v.str,
+    r.v.num = old_strindex(arglist.v.list[1].v.str, arglist.v.list[2].v.str,
 		       case_matters);
 
     free_var(arglist);
@@ -624,7 +624,7 @@ bf_rindex(Var arglist, Byte next, void *vdata, Objid progr)
     if (arglist.v.list[0].v.num == 3)
 	case_matters = is_true(arglist.v.list[3]);
     r.type = TYPE_INT;
-    r.v.num = strrindex(arglist.v.list[1].v.str, arglist.v.list[2].v.str,
+    r.v.num = old_strrindex(arglist.v.list[1].v.str, arglist.v.list[2].v.str,
 			case_matters);
 
     free_var(arglist);

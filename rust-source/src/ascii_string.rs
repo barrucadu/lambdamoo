@@ -30,6 +30,48 @@ pub fn mystrncasecmp(ascii_str1: AsciiString, ascii_str2: AsciiString, len: usiz
     )
 }
 
+/// Find the index of the first occurrence of the second string in the
+/// first.
+pub fn strindex(
+    ascii_haystack: AsciiString,
+    ascii_needle: AsciiString,
+    case_counts: bool,
+) -> Option<usize> {
+    let AsciiString(haystack) = ascii_haystack;
+    let AsciiString(needle) = ascii_needle;
+
+    if case_counts {
+        haystack.find(needle)
+    } else {
+        haystack.to_ascii_uppercase().find(
+            needle
+                .to_ascii_uppercase()
+                .as_str(),
+        )
+    }
+}
+
+/// Find the index of the last occurrence of the second string in the
+/// first.
+pub fn strrindex(
+    ascii_haystack: AsciiString,
+    ascii_needle: AsciiString,
+    case_counts: bool,
+) -> Option<usize> {
+    let AsciiString(haystack) = ascii_haystack;
+    let AsciiString(needle) = ascii_needle;
+
+    if case_counts {
+        haystack.rfind(needle)
+    } else {
+        haystack.to_ascii_uppercase().rfind(
+            needle
+                .to_ascii_uppercase()
+                .as_str(),
+        )
+    }
+}
+
 /// Check if two ASCII strings are the same, ignoring case.
 ///
 /// TODO: Remove.
@@ -65,6 +107,56 @@ pub extern "C" fn old_mystrncasecmp(
             Ordering::Less => -1,
             Ordering::Equal => 0,
             Ordering::Greater => 1,
+        }
+    }
+}
+
+/// Find the index of the first occurrence of the second string in the
+/// first.
+///
+/// TODO: Remove.
+#[no_mangle]
+pub extern "C" fn old_strindex(
+    haystack: *const libc::c_char,
+    needle: *const libc::c_char,
+    case_counts: i32,
+) -> i32 {
+    // convert into Rust types and call `strindex`.
+    unsafe {
+        let rust_haystack = CStr::from_ptr(haystack).to_str().unwrap();
+        let rust_needle = CStr::from_ptr(needle).to_str().unwrap();
+        match strindex(
+            AsciiString(rust_haystack),
+            AsciiString(rust_needle),
+            case_counts == 1,
+        ) {
+            Some(n) => n as i32 + 1,
+            None => 0,
+        }
+    }
+}
+
+/// Find the index of the last occurrence of the second string in the
+/// first.
+///
+/// TODO: Remove.
+#[no_mangle]
+pub extern "C" fn old_strrindex(
+    haystack: *const libc::c_char,
+    needle: *const libc::c_char,
+    case_counts: i32,
+) -> i32 {
+    // convert into Rust types and call `strindex`.
+    unsafe {
+        let rust_haystack = CStr::from_ptr(haystack).to_str().unwrap();
+        let rust_needle = CStr::from_ptr(needle).to_str().unwrap();
+        match strrindex(
+            AsciiString(rust_haystack),
+            AsciiString(rust_needle),
+            case_counts == 1,
+        ) {
+            Some(n) => n as i32 + 1,
+            None => 0,
         }
     }
 }
@@ -120,6 +212,54 @@ mod test {
 
         for (index, (str1, str2, len, expected)) in examples.iter().enumerate() {
             let actual = mystrncasecmp(AsciiString(str1), AsciiString(str2), *len);
+            assert_eq!(
+                actual,
+                *expected,
+                "example: {} ({} ~=~ {})",
+                index,
+                str1,
+                str2
+            );
+        }
+    }
+
+    #[test]
+    fn example_strindex() {
+        let examples: &[(&str, &str, bool, Option<usize>)] = &[
+            ("foobar", "", false, Some(0)),
+            ("foobar", "r", false, Some(5)),
+            ("foobar", "o", false, Some(1)),
+            ("foobar", "x", false, None),
+            ("foobar", "oba", false, Some(2)),
+            ("Foobar", "foo", true, None),
+        ];
+
+        for (index, (str1, str2, case_counts, expected)) in examples.iter().enumerate() {
+            let actual = strindex(AsciiString(str1), AsciiString(str2), *case_counts);
+            assert_eq!(
+                actual,
+                *expected,
+                "example: {} ({} ~=~ {})",
+                index,
+                str1,
+                str2
+            );
+        }
+    }
+
+    #[test]
+    fn example_strrindex() {
+        let examples: &[(&str, &str, bool, Option<usize>)] = &[
+            ("foobar", "", false, Some(6)),
+            ("foobar", "r", false, Some(5)),
+            ("foobar", "o", false, Some(2)),
+            ("foobar", "x", false, None),
+            ("foobar", "oba", false, Some(2)),
+            ("Foobar", "foo", true, None),
+        ];
+
+        for (index, (str1, str2, case_counts, expected)) in examples.iter().enumerate() {
+            let actual = strrindex(AsciiString(str1), AsciiString(str2), *case_counts);
             assert_eq!(
                 actual,
                 *expected,

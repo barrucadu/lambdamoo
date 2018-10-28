@@ -265,36 +265,6 @@ strsub(const char *source, const char *what, const char *with, int case_counts)
     return reset_stream(str);
 }
 
-int
-strindex(const char *source, const char *what, int case_counts)
-{
-    const char *s, *e;
-    int lwhat = strlen(what);
-
-    for (s = source, e = source + strlen(source) - lwhat; s <= e; s++) {
-	if (!(case_counts ? strncmp(s, what, lwhat)
-	      : old_mystrncasecmp(s, what, lwhat))) {
-	    return s - source + 1;
-	}
-    }
-    return 0;
-}
-
-int
-strrindex(const char *source, const char *what, int case_counts)
-{
-    const char *s;
-    int lwhat = strlen(what);
-
-    for (s = source + strlen(source) - lwhat; s >= source; s--) {
-	if (!(case_counts ? strncmp(s, what, lwhat)
-	      : old_mystrncasecmp(s, what, lwhat))) {
-	    return s - source + 1;
-	}
-    }
-    return 0;
-}
-
 Var
 get_system_property(const char *name)
 {
