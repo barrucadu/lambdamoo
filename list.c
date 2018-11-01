@@ -542,7 +542,7 @@ bf_strsub(Var arglist, Byte next, void *vdata, Objid progr)
 	return make_error_pack(E_INVARG);
     } else {
 	r.type = TYPE_STR;
-	r.v.str = str_dup(strsub(arglist.v.list[1].v.str,
+	r.v.str = str_dup(old_strsub(arglist.v.list[1].v.str,
 				 arglist.v.list[2].v.str,
 				 arglist.v.list[3].v.str, case_matters));
 
