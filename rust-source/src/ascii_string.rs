@@ -76,16 +76,17 @@ pub fn strrindex(
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn old_mystrcasecmp(str1: *const libc::c_char, str2: *const libc::c_char) -> i32 {
+pub unsafe extern "C" fn old_mystrcasecmp(
+    c_str1: *const libc::c_char,
+    c_str2: *const libc::c_char,
+) -> i32 {
     // convert into Rust types and call `mystrcasecmp`.
-    unsafe {
-        let rust_str1 = CStr::from_ptr(str1).to_str().unwrap();
-        let rust_str2 = CStr::from_ptr(str2).to_str().unwrap();
-        match mystrcasecmp(AsciiString(rust_str1), AsciiString(rust_str2)) {
-            Ordering::Less => -1,
-            Ordering::Equal => 0,
-            Ordering::Greater => 1,
-        }
+    let str1 = c_str_to_ascii_str(c_str1);
+    let str2 = c_str_to_ascii_str(c_str2);
+    match mystrcasecmp(str1, str2) {
+        Ordering::Less => -1,
+        Ordering::Equal => 0,
+        Ordering::Greater => 1,
     }
 }
 
@@ -94,20 +95,18 @@ pub extern "C" fn old_mystrcasecmp(str1: *const libc::c_char, str2: *const libc:
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn old_mystrncasecmp(
-    str1: *const libc::c_char,
-    str2: *const libc::c_char,
+pub unsafe extern "C" fn old_mystrncasecmp(
+    c_str1: *const libc::c_char,
+    c_str2: *const libc::c_char,
     len: i32,
 ) -> i32 {
     // convert into Rust types and call `mystrcasecmp`.
-    unsafe {
-        let rust_str1 = CStr::from_ptr(str1).to_str().unwrap();
-        let rust_str2 = CStr::from_ptr(str2).to_str().unwrap();
-        match mystrncasecmp(AsciiString(rust_str1), AsciiString(rust_str2), len as usize) {
-            Ordering::Less => -1,
-            Ordering::Equal => 0,
-            Ordering::Greater => 1,
-        }
+    let str1 = c_str_to_ascii_str(c_str1);
+    let str2 = c_str_to_ascii_str(c_str2);
+    match mystrncasecmp(str1, str2, len as usize) {
+        Ordering::Less => -1,
+        Ordering::Equal => 0,
+        Ordering::Greater => 1,
     }
 }
 
@@ -116,23 +115,17 @@ pub extern "C" fn old_mystrncasecmp(
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn old_strindex(
-    haystack: *const libc::c_char,
-    needle: *const libc::c_char,
+pub unsafe extern "C" fn old_strindex(
+    c_haystack: *const libc::c_char,
+    c_needle: *const libc::c_char,
     case_counts: i32,
 ) -> i32 {
     // convert into Rust types and call `strindex`.
-    unsafe {
-        let rust_haystack = CStr::from_ptr(haystack).to_str().unwrap();
-        let rust_needle = CStr::from_ptr(needle).to_str().unwrap();
-        match strindex(
-            AsciiString(rust_haystack),
-            AsciiString(rust_needle),
-            case_counts == 1,
-        ) {
-            Some(n) => n as i32 + 1,
-            None => 0,
-        }
+    let haystack = c_str_to_ascii_str(c_haystack);
+    let needle = c_str_to_ascii_str(c_needle);
+    match strindex(haystack, needle, case_counts == 1) {
+        Some(n) => n as i32 + 1,
+        None => 0,
     }
 }
 
@@ -141,24 +134,26 @@ pub extern "C" fn old_strindex(
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn old_strrindex(
-    haystack: *const libc::c_char,
-    needle: *const libc::c_char,
+pub unsafe extern "C" fn old_strrindex(
+    c_haystack: *const libc::c_char,
+    c_needle: *const libc::c_char,
     case_counts: i32,
 ) -> i32 {
     // convert into Rust types and call `strindex`.
-    unsafe {
-        let rust_haystack = CStr::from_ptr(haystack).to_str().unwrap();
-        let rust_needle = CStr::from_ptr(needle).to_str().unwrap();
-        match strrindex(
-            AsciiString(rust_haystack),
-            AsciiString(rust_needle),
-            case_counts == 1,
-        ) {
-            Some(n) => n as i32 + 1,
-            None => 0,
-        }
+    let haystack = c_str_to_ascii_str(c_haystack);
+    let needle = c_str_to_ascii_str(c_needle);
+    match strrindex(haystack, needle, case_counts == 1) {
+        Some(n) => n as i32 + 1,
+        None => 0,
     }
+}
+
+/// Helper function to convert a C-style string into an `AsciiString`.
+///
+/// TODO: Remove.
+pub unsafe fn c_str_to_ascii_str<'a>(ptr: *const libc::c_char) -> AsciiString<'a> {
+    let rs_str = CStr::from_ptr(ptr).to_str().unwrap();
+    AsciiString(rs_str)
 }
 
 #[cfg(test)]

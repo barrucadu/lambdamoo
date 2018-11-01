@@ -25,19 +25,17 @@ pub fn hash_bytes(bytes: &[u8]) -> [u8; 32] {
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn old_hash_bytes(
+pub unsafe extern "C" fn old_hash_bytes(
     source: *const libc::c_char,
     length: libc::c_int,
 ) -> *const libc::c_char {
     // convert into Rust types and call `hash_bytes`.
-    unsafe {
-        let bytes = slice::from_raw_parts(source as *const u8, length as usize);
+    let bytes = slice::from_raw_parts(source as *const u8, length as usize);
 
-        let answer = hash_bytes(bytes);
+    let answer = hash_bytes(bytes);
 
-        // return the answer as a reference-counted string
-        memory::str_dup_n(answer.as_ptr() as *const libc::c_char, answer.len())
-    }
+    // return the answer as a reference-counted string
+    memory::str_dup_n(answer.as_ptr() as *const libc::c_char, answer.len())
 }
 
 #[cfg(test)]

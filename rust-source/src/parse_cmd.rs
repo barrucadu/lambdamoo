@@ -1,9 +1,9 @@
 extern crate libc;
 
-use std::ffi::CStr;
 use std::mem::size_of;
 
-use memory::*;
+use ascii_string::{AsciiString, c_str_to_ascii_str};
+use memory::{MemoryType, almost_mymalloc, rs_str_to_c_str};
 
 /// Split a string into space-separated words, where:
 ///
@@ -11,10 +11,11 @@ use memory::*;
 /// - Multiple spaces are merged: `hello  world` is [`hello`,`world`]
 /// - Words can be quoted: `hello "world foo" bar` is [`hello`,`world foo`,`bar`]
 /// - A backslash treats the next character literally: `hello\ world` is [`hello world`]
-pub fn parse_into_words(input: &str) -> Vec<String> {
+pub fn parse_into_words(ascii_input: AsciiString) -> Vec<String> {
     // 50 words is (probably) enough for anybody!
     let mut words = Vec::with_capacity(50);
 
+    let AsciiString(input) = ascii_input;
     let mut it = input.chars().peekable();
 
     let mut in_quotes = false;
@@ -64,28 +65,26 @@ pub fn parse_into_words(input: &str) -> Vec<String> {
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn old_parse_into_words(
-    input: *const libc::c_char,
+pub unsafe extern "C" fn old_parse_into_words(
+    c_input: *const libc::c_char,
     nwords: *mut libc::c_int,
 ) -> *mut *mut libc::c_char {
     // convert into Rust types and call `parse_into_words`.
-    unsafe {
-        let rust_str = CStr::from_ptr(input).to_str().unwrap();
-        let words = parse_into_words(rust_str);
-        let words_vec: Vec<*mut libc::c_char> =
-            words.iter().map(|s| rs_str_to_c_str(s.as_str())).collect();
-        *nwords = words.len() as libc::c_int;
-        let actual_size = size_of::<*mut libc::c_char>() * words.len();
-        let out = almost_mymalloc(actual_size, MemoryType::M_STRING_PTRS);
-        if !out.is_null() {
-            libc::memcpy(
-                out as *mut libc::c_void,
-                words_vec.as_slice().as_ptr() as *const libc::c_void,
-                actual_size,
-            );
-        }
-        out as *mut *mut libc::c_char
+    let input = c_str_to_ascii_str(c_input);
+    let words = parse_into_words(input);
+    let words_vec: Vec<*mut libc::c_char> =
+        words.iter().map(|s| rs_str_to_c_str(s.as_str())).collect();
+    *nwords = words.len() as libc::c_int;
+    let actual_size = size_of::<*mut libc::c_char>() * words.len();
+    let out = almost_mymalloc(actual_size, MemoryType::M_STRING_PTRS);
+    if !out.is_null() {
+        libc::memcpy(
+            out as *mut libc::c_void,
+            words_vec.as_slice().as_ptr() as *const libc::c_void,
+            actual_size,
+        );
     }
+    out as *mut *mut libc::c_char
 }
 
 #[cfg(test)]
@@ -109,7 +108,7 @@ mod test {
         ];
 
         for (index, (original, expected_words)) in examples.iter().enumerate() {
-            let actual_words = parse_into_words(original);
+            let actual_words = parse_into_words(AsciiString(original));
             assert_eq!(actual_words, *expected_words, "example: {}", index);
         }
     }

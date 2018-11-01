@@ -61,27 +61,25 @@ pub enum MemoryType {
 ///
 /// TODO: Handle failed malloc in Rust when `panic` is ported.
 #[no_mangle]
-pub extern "C" fn almost_mymalloc(
+pub unsafe extern "C" fn almost_mymalloc(
     size: libc::size_t,
     memory_type: MemoryType,
 ) -> *mut libc::c_void {
     let offset = refcount_offset(memory_type);
     let actual_size = if size == 0 { 1 } else { size } + offset;
 
-    unsafe {
-        let mut mem = libc::malloc(actual_size) as *mut u8;
+    let mut mem = libc::malloc(actual_size) as *mut u8;
 
-        if mem.is_null() {
-            return mem as *mut libc::c_void;
-        }
-
-        if offset > 0 {
-            mem = mem.offset(offset as isize);
-            *((mem as *mut i32).offset(-1)) = 1
-        }
-
-        mem as *mut libc::c_void
+    if mem.is_null() {
+        return mem as *mut libc::c_void;
     }
+
+    if offset > 0 {
+        mem = mem.offset(offset as isize);
+        *((mem as *mut i32).offset(-1)) = 1
+    }
+
+    mem as *mut libc::c_void
 }
 
 /// Reallocate memory, preserving the refcount part.
@@ -90,7 +88,7 @@ pub extern "C" fn almost_mymalloc(
 ///
 /// TODO: Handle failed realloc in Rust when `panic` is ported.
 #[no_mangle]
-pub extern "C" fn almost_myrealloc(
+pub unsafe extern "C" fn almost_myrealloc(
     ptr: *mut libc::c_void,
     size: libc::size_t,
     memory_type: MemoryType,
@@ -98,21 +96,19 @@ pub extern "C" fn almost_myrealloc(
     let offset = refcount_offset(memory_type);
     let actual_size = size + offset;
 
-    unsafe {
-        let orig = (ptr as *mut u8).offset(-(offset as isize)) as *mut libc::c_void;
-        let new = libc::realloc(orig, actual_size);
-        if new.is_null() {
-            return new;
-        }
-        (new as *mut u8).offset(offset as isize) as *mut libc::c_void
+    let orig = (ptr as *mut u8).offset(-(offset as isize)) as *mut libc::c_void;
+    let new = libc::realloc(orig, actual_size);
+    if new.is_null() {
+        return new;
     }
+    (new as *mut u8).offset(offset as isize) as *mut libc::c_void
 }
 
 /// Free memory allocated by `almost_mymalloc`.
 #[no_mangle]
-pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: MemoryType) {
+pub unsafe extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: MemoryType) {
     let offset = refcount_offset(memory_type);
-    unsafe { libc::free(ptr.offset(-(offset as isize))) }
+    libc::free(ptr.offset(-(offset as isize)))
 }
 
 /// Increment the reference count of something.
@@ -122,11 +118,9 @@ pub extern "C" fn myfree(ptr: *mut libc::c_void, memory_type: MemoryType) {
 ///
 /// TODO: Remove
 #[no_mangle]
-pub extern "C" fn addref(ptr: *mut libc::c_void) -> i32 {
-    unsafe {
-        *((ptr as *mut i32).offset(-1)) += 1;
-        refcount(ptr)
-    }
+pub unsafe extern "C" fn addref(ptr: *mut libc::c_void) -> i32 {
+    *((ptr as *mut i32).offset(-1)) += 1;
+    refcount(ptr)
 }
 
 /// Decrement the reference count of something.
@@ -136,11 +130,9 @@ pub extern "C" fn addref(ptr: *mut libc::c_void) -> i32 {
 ///
 /// TODO: Remove
 #[no_mangle]
-pub extern "C" fn delref(ptr: *mut libc::c_void) -> i32 {
-    unsafe {
-        *((ptr as *mut i32).offset(-1)) -= 1;
-        refcount(ptr)
-    }
+pub unsafe extern "C" fn delref(ptr: *mut libc::c_void) -> i32 {
+    *((ptr as *mut i32).offset(-1)) -= 1;
+    refcount(ptr)
 }
 
 /// Get the reference count of something.
@@ -150,14 +142,14 @@ pub extern "C" fn delref(ptr: *mut libc::c_void) -> i32 {
 ///
 /// TODO: Remove
 #[no_mangle]
-pub extern "C" fn refcount(ptr: *mut libc::c_void) -> i32 {
-    unsafe { (ptr as *mut i32).offset(-1).read() }
+pub unsafe extern "C" fn refcount(ptr: *mut libc::c_void) -> i32 {
+    (ptr as *mut i32).offset(-1).read()
 }
 
 /// Convert a Rust `&str` into a C string with refcount part.
 ///
 /// TODO: Remove.
-pub fn rs_str_to_c_str(src: &str) -> *mut libc::c_char {
+pub unsafe fn rs_str_to_c_str(src: &str) -> *mut libc::c_char {
     let c_string = ffi::CString::new(src).unwrap();
     str_dup(c_string.as_ptr())
 }
@@ -166,13 +158,8 @@ pub fn rs_str_to_c_str(src: &str) -> *mut libc::c_char {
 ///
 /// TODO: Remove.
 #[no_mangle]
-pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
-    let strlen = if src.is_null() {
-        0
-    } else {
-        unsafe { libc::strlen(src) }
-    };
-
+pub unsafe extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
+    let strlen = if src.is_null() { 0 } else { libc::strlen(src) };
     str_dup_n(src, strlen)
 }
 
@@ -184,14 +171,12 @@ pub extern "C" fn str_dup(src: *const libc::c_char) -> *mut libc::c_char {
 /// TODO: Handle failed malloc in Rust when `panic` is ported.
 ///
 /// TODO: Remove.
-pub fn str_dup_n(src: *const libc::c_char, strlen: libc::size_t) -> *mut libc::c_char {
+pub unsafe fn str_dup_n(src: *const libc::c_char, strlen: libc::size_t) -> *mut libc::c_char {
     let dst = almost_mymalloc(strlen + 1, MemoryType::M_STRING) as *mut libc::c_char;
 
     if !dst.is_null() {
-        unsafe {
-            libc::strncpy(dst, src, strlen);
-            *(dst.offset(strlen as isize)) = 0;
-        };
+        libc::strncpy(dst, src, strlen);
+        *(dst.offset(strlen as isize)) = 0;
     }
 
     dst
